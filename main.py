@@ -36,4 +36,4 @@ from prediction_model import PredictNumberModel
 print("\nPredict time-series rows with a Neural Network.")
 model = PredictNumberModel(size=3)
 model.train(train_data_set)
-model.test(test_data_set)
+# model.test(test_data_set)
