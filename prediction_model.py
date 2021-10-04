@@ -20,6 +20,10 @@ class PredictNumberModel:
         print(f'S = {sum_}')
         return sum_
 
+    def activation_func(self, input_sum):
+        y = round((1 / (1 + math.exp(-input_sum)) * 10), 2)
+        return y
+
     def cost_function(self, predicted, y):
         """ error = (Y - y) ^ 2 """
         result = (predicted - y) ** 2
@@ -32,11 +36,7 @@ class PredictNumberModel:
         print(f"Loss is {result}")
         return result
 
-    def activation_func(self, input_sum):
-        y = 1 / (1 + math.exp(-input_sum)) * 10
-        return y
-
-    def find_corrections(self, item, learning_rate=0.1):
+    def find_corrections(self, item, learning_rate):
         """Find corrections for each weight."""
         weight_corrections = []
         predicted = item['predicted']
@@ -56,12 +56,13 @@ class PredictNumberModel:
             weight_corrections.append(weight_delta)
         return weight_corrections
 
-    def back_propagation(self, results):
+    def back_propagation(self, results, lr=0.1):
         """Find a mean for weights correction
         and update all weighs."""
         weight_corrections = []
         for item in results:
-            weight_corrections.extend(item['weight_corrections'])
+            corrections = self.find_corrections(item, learning_rate=lr)
+            weight_corrections.extend(corrections)
 
         w_mean = 1 / len(weight_corrections) * sum(weight_corrections)
         # init a corrected set of weights
@@ -91,8 +92,6 @@ class PredictNumberModel:
                 "true_label": label,
                 "predicted": y_result
             }
-            weight_corrections = self.find_corrections(run_result)
-            run_result['weight_corrections'] = weight_corrections
             results.append(run_result)
             start += 1
             end += 1
@@ -101,7 +100,7 @@ class PredictNumberModel:
                 break
         return results
 
-    def train(self, train_data, max_epoch=1_000_000):
+    def train(self, train_data, max_epoch=100_000):
         iteration = 0
         while True:
             results = self.forward(train_data)
@@ -110,11 +109,13 @@ class PredictNumberModel:
             costs = [self.cost_function(item['predicted'], item['true_label']) for item in results]
             # TODO find loss
             loss = self.loss_function(costs)
-            if loss == 0.1:
+            if loss < 1:
+                print('Error is below 1.')
                 break
             if iteration >= max_epoch:
                 print('\nExited: reached max of epoch.')
                 break
+            print(f'Iterated {iteration} times.')
             iteration += 1
 
     def test(self, dataset):
