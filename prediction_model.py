@@ -2,9 +2,6 @@ import math
 from random import randrange
 
 
-from train_data import train_data as train_data_set
-
-
 class PredictNumberModel:
 
     def __init__(self, size):
@@ -125,6 +122,12 @@ class PredictNumberModel:
                 break
             iteration += 1
 
-
-model = PredictNumberModel(3)
-model.train(train_data_set)
+    def test(self, dataset):
+        success = 0
+        results = self.forward(dataset)
+        predicted = [item['predicted'] for item in results]
+        labels = [item['predicted'] for item in results]
+        for prd, label in zip(predicted, labels):
+            if abs(prd - label) <= 0.1:
+                success += 1
+        print(f'Accuracy is {success / len(labels) * 100}')
