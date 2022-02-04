@@ -6,10 +6,10 @@ class PredictNumberModel:
 
     def __init__(self, size):
         self.size = size
-        self.weights = [self.init_rand_weight() for _ in range(self.size)]
+        self.weights = [self.init_rand_weight() * -1, self.init_rand_weight(), self.init_rand_weight() * -1]
 
     def init_rand_weight(self):
-        weight = round(randrange(1, 10) * 0.1, 1)
+        weight = round(randrange(1, 4) * 0.1, 1)
         print(f'Random weight is {weight}')
         return weight
 
@@ -44,7 +44,8 @@ class PredictNumberModel:
         sum_of_weights = item['sum_of_weights']
         for inp in item['inputs']:
             # find derivative
-            E = (predicted - true_label) * \
+            err = predicted - true_label
+            E = err * \
                 (
                         math.exp(-sum_of_weights) /
                         ((1 + math.exp(-sum_of_weights)) ** 2)
@@ -67,7 +68,7 @@ class PredictNumberModel:
         w_mean = 1 / len(weight_corrections) * sum(weight_corrections)
         # init a corrected set of weights
         self.weights = [weight + w_mean for weight in self.weights]
-        print(f'new weights {self.weights}. Length is {len(self.weights)}')
+        print(f'new weights {self.weights}.')
 
     def forward(self, train_data):
         """Move through whole training data and calculate error for each prediction."""
@@ -100,7 +101,7 @@ class PredictNumberModel:
                 break
         return results
 
-    def train(self, train_data, max_epoch=100_000):
+    def train(self, train_data, max_epoch=1000):
         iteration = 0
         while True:
             results = self.forward(train_data)
@@ -109,8 +110,8 @@ class PredictNumberModel:
             costs = [self.cost_function(item['predicted'], item['true_label']) for item in results]
             # TODO find loss
             loss = self.loss_function(costs)
-            if loss < 1:
-                print('Error is below 1.')
+            if loss < 0.1:
+                print('Error is below 0.1.')
                 break
             if iteration >= max_epoch:
                 print('\nExited: reached max of epoch.')
